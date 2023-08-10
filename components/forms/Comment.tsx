@@ -2,7 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -30,7 +31,7 @@ const Comment: React.FC<CommentProps> = ({
   currentUserId,
 }) => {
   const pathname = usePathname();
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const form = useForm({
     resolver: zodResolver(CommentValidation),
@@ -42,14 +43,20 @@ const Comment: React.FC<CommentProps> = ({
   const onSubmit = async (
     values: z.infer<typeof CommentValidation>
   ): Promise<void> => {
-    await addCommentToThread({
-      threadId,
-      commentText: values.thread,
-      userId: currentUserId,
-      path: pathname,
-    });
+    setIsLoading(true);
 
-    form.reset();
+    try {
+      await addCommentToThread({
+        threadId,
+        commentText: values.thread,
+        userId: currentUserId,
+        path: pathname,
+      });
+
+      form.reset();
+    } catch {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -82,7 +89,7 @@ const Comment: React.FC<CommentProps> = ({
           )}
         />
 
-        <Button type="submit" className="comment-form_btn">
+        <Button type="submit" className="comment-form_btn" disabled={isLoading}>
           Reply
         </Button>
       </form>

@@ -4,6 +4,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { usePathname, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { useOrganization } from "@clerk/nextjs";
 
 import {
   Button,
@@ -25,6 +27,8 @@ interface PostThreadProps {
 const PostThread: React.FC<PostThreadProps> = ({ userId }) => {
   const pathname = usePathname();
   const router = useRouter();
+  const { organization } = useOrganization();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const form = useForm({
     resolver: zodResolver(ThreadValidation),
@@ -37,14 +41,20 @@ const PostThread: React.FC<PostThreadProps> = ({ userId }) => {
   const onSubmit = async (
     values: z.infer<typeof ThreadValidation>
   ): Promise<void> => {
-    await createThread({
-      text: values.thread,
-      author: userId,
-      communityId: null,
-      path: pathname,
-    });
+    setIsLoading(true);
 
-    router.push("/");
+    try {
+      await createThread({
+        text: values.thread,
+        author: userId,
+        communityId: organization ? organization.id : null,
+        path: pathname,
+      });
+
+      router.push("/");
+    } catch {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -73,7 +83,7 @@ const PostThread: React.FC<PostThreadProps> = ({ userId }) => {
           )}
         />
 
-        <Button type="submit" className="bg-primary-500">
+        <Button type="submit" className="bg-primary-500" disabled={isLoading}>
           Post Thread
         </Button>
       </form>

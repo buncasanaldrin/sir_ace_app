@@ -1,11 +1,26 @@
 import { currentUser } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
 
 import { ThreadCard } from "@/components/cards";
+import { Pagination } from "@/components/shared";
 import { fetchThreads } from "@/lib/mongoose/actions/thread.actions";
+import { fetchUser } from "@/lib/mongoose/actions/user.actions";
 
-const Home: React.FC = async () => {
-  const result = await fetchThreads(1, 30);
+interface HomeProps {
+  searchParams: { [key: string]: string | undefined };
+}
+
+const Home: React.FC<HomeProps> = async ({ searchParams }) => {
   const user = await currentUser();
+  if (!user) return null;
+
+  const userInfo = await fetchUser(user.id);
+  if (!userInfo?.onboarded) redirect("/onboarding");
+
+  const result = await fetchThreads(
+    searchParams.page ? +searchParams.page : 1,
+    30
+  );
 
   return (
     <>
@@ -32,6 +47,12 @@ const Home: React.FC = async () => {
           </>
         )}
       </section>
+
+      <Pagination
+        path="/"
+        pageNumber={searchParams?.page ? +searchParams.page : 1}
+        isNext={result.isNext}
+      />
     </>
   );
 };

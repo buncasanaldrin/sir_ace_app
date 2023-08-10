@@ -40,6 +40,7 @@ const AccountProfile: React.FC<AccountProfileProps> = ({ user, btnTitle }) => {
   const router = useRouter();
   const { startUpload } = useUploadThing("media");
   const [files, setFiles] = useState<File[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const form = useForm({
     resolver: zodResolver(UserValidation),
@@ -79,6 +80,7 @@ const AccountProfile: React.FC<AccountProfileProps> = ({ user, btnTitle }) => {
   const onSubmit = async (
     values: z.infer<typeof UserValidation>
   ): Promise<void> => {
+    setIsLoading(true);
     const blob = values.profile_photo;
 
     const hasImageChanged = isBase64Image(blob);
@@ -91,19 +93,23 @@ const AccountProfile: React.FC<AccountProfileProps> = ({ user, btnTitle }) => {
       }
     }
 
-    await updateUser({
-      userId: user.id,
-      username: values.username,
-      name: values.name,
-      bio: values.bio,
-      image: values.profile_photo,
-      path: pathname,
-    });
+    try {
+      await updateUser({
+        userId: user.id,
+        username: values.username,
+        name: values.name,
+        bio: values.bio,
+        image: values.profile_photo,
+        path: pathname,
+      });
 
-    if (pathname === "/profile/edit") {
-      router.back();
-    } else {
-      router.push("/");
+      if (pathname === "/profile/edit") {
+        router.back();
+      } else {
+        router.push("/");
+      }
+    } catch {
+      setIsLoading(false);
     }
   };
 
@@ -215,7 +221,7 @@ const AccountProfile: React.FC<AccountProfileProps> = ({ user, btnTitle }) => {
           )}
         />
 
-        <Button type="submit" className="bg-primary-500">
+        <Button type="submit" className="bg-primary-500" disabled={isLoading}>
           Submit
         </Button>
       </form>

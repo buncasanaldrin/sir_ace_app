@@ -1,12 +1,13 @@
 import { redirect } from "next/navigation";
 
 import { ThreadCard } from "@/components/cards";
+import { fetchCommunityPosts } from "@/lib/mongoose/actions/community.actions";
 import { fetchUserPosts } from "@/lib/mongoose/actions/user.actions";
 
 interface ThreadsTabProps {
   currentUserId: string;
   accountId: string;
-  accountType: "User";
+  accountType: "User" | "Community";
 }
 
 const ThreadsTab: React.FC<ThreadsTabProps> = async ({
@@ -14,8 +15,13 @@ const ThreadsTab: React.FC<ThreadsTabProps> = async ({
   accountId,
   accountType,
 }) => {
-  // TODO: Fetch profile threads
-  const result = await fetchUserPosts(accountId);
+  let result: any;
+
+  if (accountType === "Community") {
+    result = await fetchCommunityPosts(accountId);
+  } else {
+    result = await fetchUserPosts(accountId);
+  }
 
   if (!result) redirect("/");
 
@@ -37,7 +43,11 @@ const ThreadsTab: React.FC<ThreadsTabProps> = async ({
                   id: thread.author.id,
                 }
           }
-          community={thread.community}
+          community={
+            accountType === "Community"
+              ? { name: result.name, id: result.id, image: result.image }
+              : thread.community
+          }
           createdAt={thread.createdAt}
           comments={thread.children}
         />

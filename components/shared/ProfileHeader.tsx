@@ -7,6 +7,7 @@ interface ProfileHeaderProps {
   username: string;
   imageUrl: string;
   bio: string;
+  type?: "User" | "Community";
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({
