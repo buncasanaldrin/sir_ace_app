@@ -1,11 +1,13 @@
 import { currentUser } from "@clerk/nextjs";
 
+import { fetchUser } from "@/lib/mongoose/actions/user.actions";
 import { AccountProfile } from "@/components/forms";
 
 const OnboardingPage: React.FC = async () => {
   const user = await currentUser();
+  if (!user) return null;
 
-  const userInfo = {};
+  const userInfo = await fetchUser(user.id);
 
   const userData = {
     id: user?.id || "",

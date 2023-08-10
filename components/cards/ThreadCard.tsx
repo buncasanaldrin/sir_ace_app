@@ -84,7 +84,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
                     className="cursor-pointer object-contain"
                   />
                 </Link>
-                <Image
+                {/* <Image
                   src="/assets/repost.svg"
                   alt="repost"
                   height={24}
@@ -97,7 +97,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
                   height={24}
                   width={24}
                   className="cursor-pointer object-contain"
-                />
+                /> */}
               </div>
 
               {isComment && comments.length > 0 && (
